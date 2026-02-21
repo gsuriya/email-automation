@@ -218,7 +218,6 @@ function CreateCadencesInner() {
       <SidebarInset className="flex flex-col">
         <div className="flex items-center gap-3 px-4 h-12 border-b border-border shrink-0">
           <h1 className="text-sm font-medium text-foreground">{activeCadence.name}</h1>
-          <span className="text-xs text-muted-foreground">{activeCadence.steps} steps</span>
         </div>
         <div className="flex-1">
           <ReactFlow
