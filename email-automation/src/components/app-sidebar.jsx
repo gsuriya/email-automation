@@ -40,32 +40,32 @@ const data = {
   navMain: [
     {
       title: "Send Emails",
-      url: "#",
+      url: "/send-emails/draft",
       icon: Icons.Mail,
       items: [
         {
           title: "Create Draft",
-          url: "#",
+          url: "/send-emails/draft",
         },
         {
           title: "Create Cadences",
-          url: "#",
+          url: "/send-emails/cadences",
         },
       ],
     },
     {
       title: "Reachouts",
-      url: "#",
+      url: "/reachouts/company",
       icon: Icons.BookUser,
       isActive: true,
       items: [
         {
           title: "By Company",
-          url: "#",
+          url: "/reachouts/company",
         },
         {
           title: "By People",
-          url: "#",
+          url: "/reachouts/people",
         },
       ],
     }
@@ -73,12 +73,12 @@ const data = {
   projects: [
     {
       name: "Documentation",
-      url: "#",
+      url: "/documentation",
       icon: Icons.BookOpen,
     },
     {
       name: "Settings",
-      url: "#",
+      url: "/settings",
       icon: Icons.Settings2,
     }
   ],
