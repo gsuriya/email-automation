@@ -1,15 +1,21 @@
 import { useState, useCallback } from 'react'
 import {
   ReactFlow,
+  Panel,
   applyNodeChanges,
   applyEdgeChanges,
   addEdge,
+  useReactFlow,
+  useStore,
+  ReactFlowProvider,
   Background,
-  Controls,
-  MiniMap,
 } from '@xyflow/react'
-import '@xyflow/react/dist/style.css'
-import { Plus, ArrowRight } from 'lucide-react'
+import '@xyflow/react/dist/base.css'
+import { Minus, Plus, ArrowRight, Maximize } from 'lucide-react'
+
+import CadenceNode from '@/components/flow/CadenceNode'
+import DelayNode from '@/components/flow/DelayNode'
+import CadenceEdge from '@/components/flow/CadenceEdge'
 
 import {
   Sidebar,
@@ -25,6 +31,7 @@ import {
   SidebarInset,
 } from '@/components/ui/sidebar'
 import { Button } from '@/components/ui/button'
+import { Slider } from '@/components/ui/slider'
 
 const cadences = [
   { id: '1', name: 'Welcome Sequence',  steps: 3 },
@@ -33,57 +40,103 @@ const cadences = [
   { id: '4', name: 'Re-engagement',     steps: 2 },
 ]
 
-const defaultNodes = [
+const nodeTypes = { cadence: CadenceNode, delay: DelayNode }
+const edgeTypes = { cadence: CadenceEdge }
+const defaultEdgeOptions = { type: 'cadence', markerEnd: 'cadence-edge-circle' }
+
+const initialNodes = [
   {
     id: 'n1',
-    position: { x: 80, y: 80 },
-    data: { label: 'Day 0 — Send Email' },
-    style: {
-      background: '#1e1e2e',
-      color: '#e2e8f0',
-      border: '1px solid rgba(255,255,255,0.1)',
-      borderRadius: '8px',
-      padding: '12px 16px',
-      fontSize: '13px',
-    },
+    type: 'cadence',
+    position: { x: 250, y: 40 },
+    data: { title: 'Initial Email', subtitle: 'Introduce yourself' },
   },
   {
     id: 'n2',
-    position: { x: 80, y: 200 },
-    data: { label: 'Wait 3 days' },
-    style: {
-      background: '#16161e',
-      color: '#94a3b8',
-      border: '1px dashed rgba(255,255,255,0.1)',
-      borderRadius: '8px',
-      padding: '12px 16px',
-      fontSize: '13px',
-    },
+    type: 'delay',
+    position: { x: 270, y: 160 },
+    data: { title: 'Wait 3 days' },
   },
   {
     id: 'n3',
-    position: { x: 80, y: 320 },
-    data: { label: 'Day 3 — Follow-up' },
-    style: {
-      background: '#1e1e2e',
-      color: '#e2e8f0',
-      border: '1px solid rgba(255,255,255,0.1)',
-      borderRadius: '8px',
-      padding: '12px 16px',
-      fontSize: '13px',
-    },
+    type: 'cadence',
+    position: { x: 250, y: 270 },
+    data: { title: 'Follow-up', subtitle: 'Check in on previous email' },
+  },
+  {
+    id: 'n4',
+    type: 'delay',
+    position: { x: 270, y: 390 },
+    data: { title: 'Wait 5 days' },
+  },
+  {
+    id: 'n5',
+    type: 'cadence',
+    position: { x: 250, y: 500 },
+    data: { title: 'Final Email', subtitle: 'Last chance to connect' },
   },
 ]
 
-const defaultEdges = [
-  { id: 'e1-2', source: 'n1', target: 'n2', style: { stroke: 'rgba(255,255,255,0.2)' } },
-  { id: 'e2-3', source: 'n2', target: 'n3', style: { stroke: 'rgba(255,255,255,0.2)' } },
+const initialEdges = [
+  { id: 'e1-2', source: 'n1', target: 'n2' },
+  { id: 'e2-3', source: 'n2', target: 'n3' },
+  { id: 'e3-4', source: 'n3', target: 'n4' },
+  { id: 'e4-5', source: 'n4', target: 'n5' },
 ]
 
-export default function CreateCadences() {
+const zoomSelector = (s) => Math.round(s.transform[2] * 100)
+
+function ZoomSlider() {
+  const { zoomTo, fitView } = useReactFlow()
+  const zoom = useStore(zoomSelector)
+
+  const handleZoomChange = useCallback((value) => {
+    zoomTo(value[0] / 100)
+  }, [zoomTo])
+
+  return (
+    <Panel position="bottom-center">
+      <div className="flex items-center gap-3 rounded-lg border border-border bg-sidebar px-3 py-2 shadow-md">
+        <Button
+          variant="ghost"
+          size="icon-xs"
+          onClick={() => handleZoomChange([Math.max(zoom - 10, 10)])}
+        >
+          <Minus className="size-3.5" />
+        </Button>
+        <Slider
+          value={[zoom]}
+          onValueChange={handleZoomChange}
+          min={10}
+          max={200}
+          step={5}
+          className="w-32"
+        />
+        <Button
+          variant="ghost"
+          size="icon-xs"
+          onClick={() => handleZoomChange([Math.min(zoom + 10, 200)])}
+        >
+          <Plus className="size-3.5" />
+        </Button>
+        <span className="text-xs text-muted-foreground w-10 text-center">{zoom}%</span>
+        <div className="w-px h-4 bg-border" />
+        <Button
+          variant="ghost"
+          size="icon-xs"
+          onClick={() => fitView()}
+        >
+          <Maximize className="size-3.5" />
+        </Button>
+      </div>
+    </Panel>
+  )
+}
+
+function CreateCadencesInner() {
   const [activeCadence, setActiveCadence] = useState(cadences[0])
-  const [nodes, setNodes] = useState(defaultNodes)
-  const [edges, setEdges] = useState(defaultEdges)
+  const [nodes, setNodes] = useState(initialNodes)
+  const [edges, setEdges] = useState(initialEdges)
 
   const onNodesChange = useCallback(
     changes => setNodes(n => applyNodeChanges(changes, n)), []
@@ -92,12 +145,12 @@ export default function CreateCadences() {
     changes => setEdges(e => applyEdgeChanges(changes, e)), []
   )
   const onConnect = useCallback(
-    params => setEdges(e => addEdge({ ...params, style: { stroke: 'rgba(255,255,255,0.2)' } }, e)), []
+    params => setEdges(e => addEdge(params, e)), []
   )
 
   return (
-    <SidebarProvider style={{ '--sidebar-width': '220px' }} className="!min-h-0 h-full">
-      <Sidebar collapsible="none" className="border-r border-border">
+    <SidebarProvider style={{ '--sidebar-width': '220px' }} className="!min-h-0 h-full !bg-transparent">
+      <Sidebar collapsible="none" className="cadence-sidebar border-r border-border !bg-transparent">
         <SidebarContent>
           <SidebarGroup>
             <SidebarGroupLabel>Cadences</SidebarGroupLabel>
@@ -120,7 +173,7 @@ export default function CreateCadences() {
         </SidebarContent>
         <SidebarFooter className="border-t border-border p-3">
           <Button variant="outline" size="sm">
-             New Cadence <ArrowRight className="size-4" />
+            New Cadence <ArrowRight className="size-4" />
           </Button>
         </SidebarFooter>
       </Sidebar>
@@ -138,19 +191,46 @@ export default function CreateCadences() {
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
             fitView
+            nodeTypes={nodeTypes}
+            edgeTypes={edgeTypes}
+            defaultEdgeOptions={defaultEdgeOptions}
             colorMode="dark"
+            proOptions={{ hideAttribution: true }}
             style={{ background: 'transparent' }}
           >
-            <Background color="rgba(255,255,255,0.04)" gap={24} />
-            <Controls />
-            <MiniMap
-              nodeColor="#1e1e2e"
-              maskColor="rgba(0,0,0,0.4)"
-              style={{ background: '#0a0a0f' }}
-            />
+            <Background color="rgba(255,255,255,0.15)" variant="dots" gap={20} size={1.5} />
+            <ZoomSlider />
+            <svg>
+              <defs>
+                <linearGradient id="cadence-edge-gradient">
+                  <stop offset="0%" stopColor="#a855f7" />
+                  <stop offset="100%" stopColor="#2a8af6" />
+                </linearGradient>
+                <marker
+                  id="cadence-edge-circle"
+                  viewBox="-5 -5 10 10"
+                  refX="0"
+                  refY="0"
+                  markerUnits="strokeWidth"
+                  markerWidth="10"
+                  markerHeight="10"
+                  orient="auto"
+                >
+                  <circle stroke="#2a8af6" strokeOpacity="0.75" r="2" cx="0" cy="0" />
+                </marker>
+              </defs>
+            </svg>
           </ReactFlow>
         </div>
       </SidebarInset>
     </SidebarProvider>
+  )
+}
+
+export default function CreateCadences() {
+  return (
+    <ReactFlowProvider>
+      <CreateCadencesInner />
+    </ReactFlowProvider>
   )
 }

@@ -125,3 +125,180 @@
     @apply text-foreground;
   }
 }
+
+/* React Flow — transparent canvas so meteors show through */
+.react-flow.dark {
+  background: transparent !important;
+}
+
+/* Cadence sidebar — let comets bleed through */
+.cadence-sidebar [data-slot="sidebar-menu-button"][data-active="true"],
+.cadence-sidebar [data-slot="sidebar-menu-button"]:hover {
+  background: oklch(0.255 0.006 240 / 50%) !important;
+}
+
+/* React Flow — Cadence Builder */
+.react-flow__node-cadence,
+.react-flow__node-delay {
+  --node-bg: oklch(0.145 0.008 240);
+  --node-border-radius: 12px;
+  --node-box-shadow-cadence: 8px 0 20px rgba(42, 138, 246, 0.25),
+    -8px 0 20px rgba(168, 85, 247, 0.25);
+  --node-box-shadow-delay: 4px 0 12px rgba(100, 116, 139, 0.15),
+    -4px 0 12px rgba(100, 116, 139, 0.15);
+
+  font-family: inherit;
+  font-weight: 500;
+  letter-spacing: -0.2px;
+}
+
+.react-flow__node-cadence {
+  border-radius: var(--node-border-radius);
+  display: flex;
+  height: 72px;
+  min-width: 200px;
+  box-shadow: var(--node-box-shadow-cadence);
+}
+
+.react-flow__node-delay {
+  border-radius: var(--node-border-radius);
+  display: flex;
+  height: 56px;
+  min-width: 160px;
+  box-shadow: var(--node-box-shadow-delay);
+}
+
+.react-flow__node-cadence .wrapper,
+.react-flow__node-delay .wrapper {
+  overflow: hidden;
+  display: flex;
+  padding: 2px;
+  position: relative;
+  border-radius: var(--node-border-radius);
+  flex-grow: 1;
+}
+
+.react-flow__node-cadence .wrapper.gradient::before {
+  content: '';
+  position: absolute;
+  padding-bottom: calc(100% * 1.41421356237);
+  width: calc(100% * 1.41421356237);
+  background: conic-gradient(
+    from -160deg at 50% 50%,
+    #2a8af6 0deg,
+    #a855f7 120deg,
+    #06b6d4 240deg,
+    #2a8af6 360deg
+  );
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 100%;
+}
+
+.react-flow__node-cadence.selected .wrapper.gradient::before {
+  background: conic-gradient(
+    from -160deg at 50% 50%,
+    #2a8af6 0deg,
+    #a855f7 120deg,
+    #06b6d4 240deg,
+    rgba(42, 138, 246, 0) 360deg
+  );
+  animation: cadence-spinner 4s linear infinite;
+  transform: translate(-50%, -50%) rotate(0deg);
+  z-index: -1;
+}
+
+@keyframes cadence-spinner {
+  100% {
+    transform: translate(-50%, -50%) rotate(-360deg);
+  }
+}
+
+.react-flow__node-delay .wrapper {
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+}
+
+.react-flow__node-cadence .inner,
+.react-flow__node-delay .inner {
+  background: var(--node-bg);
+  padding: 14px 18px;
+  border-radius: var(--node-border-radius);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex-grow: 1;
+  position: relative;
+}
+
+.react-flow__node-cadence .body,
+.react-flow__node-delay .body {
+  display: flex;
+  align-items: center;
+}
+
+.react-flow__node-cadence .icon,
+.react-flow__node-delay .icon {
+  margin-right: 10px;
+  color: #2a8af6;
+  display: flex;
+  align-items: center;
+}
+
+.react-flow__node-delay .icon {
+  color: #64748b;
+}
+
+.react-flow__node-cadence .title,
+.react-flow__node-delay .title {
+  font-size: 14px;
+  line-height: 1;
+  color: #f3f4f6;
+}
+
+.react-flow__node-delay .title {
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.react-flow__node-cadence .subtitle,
+.react-flow__node-delay .subtitle {
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 3px;
+}
+
+.react-flow__node-cadence .react-flow__handle,
+.react-flow__node-delay .react-flow__handle {
+  opacity: 0;
+}
+
+.react-flow__edge .react-flow__edge-path {
+  stroke: url(#cadence-edge-gradient);
+  stroke-width: 2;
+  stroke-opacity: 0.75;
+}
+
+.react-flow__controls button {
+  background-color: oklch(0.145 0.008 240);
+  color: #f3f4f6;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: none;
+}
+
+.react-flow__controls button:hover {
+  background-color: oklch(0.185 0.007 240);
+}
+
+.react-flow__controls button:first-child {
+  border-radius: 6px 6px 0 0;
+}
+
+.react-flow__controls button:last-child {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0 0 6px 6px;
+}
+
+.react-flow__controls button path {
+  fill: #f3f4f6;
+}
