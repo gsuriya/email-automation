@@ -1,3 +1,15 @@
+// TODO: Use shadcn Empty component for empty states
+// npx shadcn@latest add empty
+// import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
+// <Empty>
+//   <EmptyHeader>
+//     <EmptyMedia variant="icon"><Icon /></EmptyMedia>
+//     <EmptyTitle>No data</EmptyTitle>
+//     <EmptyDescription>No data found</EmptyDescription>
+//   </EmptyHeader>
+//   <EmptyContent><Button>Add data</Button></EmptyContent>
+// </Empty>
+
 import { useMemo, useState } from "react"
 import {
   Table, TableHeader, TableColumn, TableBody, TableRow, TableCell,
