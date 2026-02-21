@@ -11,7 +11,7 @@ import {
   Background,
 } from '@xyflow/react'
 import '@xyflow/react/dist/base.css'
-import { Minus, Plus, ArrowRight, Maximize } from 'lucide-react'
+import { Minus, Plus, ArrowRight, Maximize, Play, Loader2 } from 'lucide-react'
 
 import CadenceNode from '@/components/flow/CadenceNode'
 import DelayNode from '@/components/flow/DelayNode'
@@ -32,6 +32,12 @@ import {
 } from '@/components/ui/sidebar'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 
 const cadences = [
   { id: '1', name: 'Welcome Sequence',  steps: 3 },
@@ -133,6 +139,37 @@ function ZoomSlider() {
   )
 }
 
+function TestWorkflowButton() {
+  const [running, setRunning] = useState(false)
+
+  const handleTest = useCallback(() => {
+    setRunning(true)
+    setTimeout(() => setRunning(false), 3000)
+  }, [])
+
+  return (
+    <Panel position="top-right">
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="outline" size="sm" onClick={handleTest} disabled={running}>
+              {running ? (
+                <Loader2 className="size-4 animate-spin" data-icon="inline-start" />
+              ) : (
+                <Play className="size-4" data-icon="inline-start" />
+              )}
+              {running ? 'Running...' : 'Test Workflow'}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom">
+            Test the workflow by sending emails to yourself
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    </Panel>
+  )
+}
+
 function CreateCadencesInner() {
   const [activeCadence, setActiveCadence] = useState(cadences[0])
   const [nodes, setNodes] = useState(initialNodes)
@@ -199,6 +236,7 @@ function CreateCadencesInner() {
             style={{ background: 'transparent' }}
           >
             <Background color="rgba(255,255,255,0.15)" variant="dots" gap={20} size={1.5} />
+            <TestWorkflowButton />
             <ZoomSlider />
             <svg>
               <defs>
