@@ -26,7 +26,7 @@ export default function App() {
               <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
                 <SidebarTrigger className="-ml-1" />
               </header>
-              <main className="flex-1 overflow-auto">
+              <main className="flex-1 overflow-auto h-full">
                 <Routes>
                   <Route path="/send-emails/draft"    element={<CreateDraft />} />
                   <Route path="/send-emails/cadences" element={<CreateCadences />} />
