@@ -8,8 +8,6 @@ export default function CadenceEdge({
   targetY,
   sourcePosition,
   targetPosition,
-  style = {},
-  markerEnd,
 }) {
   const xEqual = sourceX === targetX
   const yEqual = sourceY === targetY
@@ -26,10 +24,9 @@ export default function CadenceEdge({
   return (
     <path
       id={id}
-      style={style}
       className="react-flow__edge-path"
       d={edgePath}
-      markerEnd={markerEnd}
+      fill="none"
     />
   )
 }

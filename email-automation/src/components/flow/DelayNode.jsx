@@ -1,24 +1,31 @@
-import { Handle, Position } from '@xyflow/react'
-import { Clock } from 'lucide-react'
+import { memo } from 'react'
+import { Position, useConnection } from '@xyflow/react'
+import { Clock, Settings, Trash2, SkipForward } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import { cn } from '@/lib/utils'
+import { BaseHandle } from '@/components/base-handle'
+import { ButtonHandle } from '@/components/button-handle'
+import AddNodePopover from './AddNodePopover'
 
-export default function DelayNode({ data }) {
+const DelayNode = memo(function DelayNode({ data }) {
+  const connectionInProgress = useConnection((c) => c.inProgress)
+
+  const statusClass =
+    data.status === 'executing'
+      ? 'node-executing'
+      : data.status === 'complete'
+        ? 'node-complete'
+        : ''
+
   return (
-    <div className="react-flow__node-delay">
-      <div className="wrapper">
-        <div className="inner">
-          <div className="body">
-            <div className="icon">
-              <Clock size={14} />
-            </div>
-            <div>
-              <div className="title">{data.title}</div>
-              {data.subtitle && <div className="subtitle">{data.subtitle}</div>}
-            </div>
-          </div>
-        </div>
-      </div>
-      <Handle type="target" position={Position.Top} />
-      <Handle type="source" position={Position.Bottom} />
-    </div>
+    <ButtonHandle></ButtonHandle>
   )
-}
+})
+
+export default DelayNode

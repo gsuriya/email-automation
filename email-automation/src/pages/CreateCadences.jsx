@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import {
   ReactFlow,
   Panel,
@@ -11,11 +11,12 @@ import {
   Background,
 } from '@xyflow/react'
 import '@xyflow/react/dist/base.css'
-import { Minus, Plus, ArrowRight, Maximize, Play, Loader2 } from 'lucide-react'
+import { Minus, Plus, ArrowRight, Maximize, Play, Square } from 'lucide-react'
 
 import CadenceNode from '@/components/flow/CadenceNode'
 import DelayNode from '@/components/flow/DelayNode'
 import CadenceEdge from '@/components/flow/CadenceEdge'
+import EmailEditSheet from '@/components/flow/EmailEditSheet'
 
 import {
   Sidebar,
@@ -40,46 +41,46 @@ import {
 } from '@/components/ui/tooltip'
 
 const cadences = [
-  { id: '1', name: 'Welcome Sequence',  steps: 3 },
-  { id: '2', name: 'Cold Outreach',     steps: 5 },
-  { id: '3', name: 'Follow-up Series',  steps: 4 },
-  { id: '4', name: 'Re-engagement',     steps: 2 },
+  { id: '1', name: 'Welcome Sequence', steps: 3 },
+  { id: '2', name: 'Cold Outreach', steps: 5 },
+  { id: '3', name: 'Follow-up Series', steps: 4 },
+  { id: '4', name: 'Re-engagement', steps: 2 },
 ]
 
 const nodeTypes = { cadence: CadenceNode, delay: DelayNode }
 const edgeTypes = { cadence: CadenceEdge }
-const defaultEdgeOptions = { type: 'cadence', markerEnd: 'cadence-edge-circle' }
+const defaultEdgeOptions = { type: 'cadence' }
 
 const initialNodes = [
   {
     id: 'n1',
     type: 'cadence',
     position: { x: 250, y: 40 },
-    data: { title: 'Initial Email', subtitle: 'Introduce yourself' },
+    data: { title: 'Initial Email' },
   },
   {
     id: 'n2',
     type: 'delay',
-    position: { x: 270, y: 160 },
+    position: { x: 270, y: 180 },
     data: { title: 'Wait 3 days' },
   },
   {
     id: 'n3',
     type: 'cadence',
-    position: { x: 250, y: 270 },
-    data: { title: 'Follow-up', subtitle: 'Check in on previous email' },
+    position: { x: 250, y: 320 },
+    data: { title: 'Follow-up' },
   },
   {
     id: 'n4',
     type: 'delay',
-    position: { x: 270, y: 390 },
+    position: { x: 270, y: 460 },
     data: { title: 'Wait 5 days' },
   },
   {
     id: 'n5',
     type: 'cadence',
-    position: { x: 250, y: 500 },
-    data: { title: 'Final Email', subtitle: 'Last chance to connect' },
+    position: { x: 250, y: 600 },
+    data: { title: 'Final Email' },
   },
 ]
 
@@ -90,15 +91,20 @@ const initialEdges = [
   { id: 'e4-5', source: 'n4', target: 'n5' },
 ]
 
+let nodeIdCounter = 10
+
 const zoomSelector = (s) => Math.round(s.transform[2] * 100)
 
 function ZoomSlider() {
   const { zoomTo, fitView } = useReactFlow()
   const zoom = useStore(zoomSelector)
 
-  const handleZoomChange = useCallback((value) => {
-    zoomTo(value[0] / 100)
-  }, [zoomTo])
+  const handleZoomChange = useCallback(
+    (value) => {
+      zoomTo(value[0] / 100)
+    },
+    [zoomTo]
+  )
 
   return (
     <Panel position="bottom-center">
@@ -125,47 +131,14 @@ function ZoomSlider() {
         >
           <Plus className="size-3.5" />
         </Button>
-        <span className="text-xs text-muted-foreground w-10 text-center">{zoom}%</span>
+        <span className="text-xs text-muted-foreground w-10 text-center">
+          {zoom}%
+        </span>
         <div className="w-px h-4 bg-border" />
-        <Button
-          variant="ghost"
-          size="icon-xs"
-          onClick={() => fitView()}
-        >
+        <Button variant="ghost" size="icon-xs" onClick={() => fitView()}>
           <Maximize className="size-3.5" />
         </Button>
       </div>
-    </Panel>
-  )
-}
-
-function TestWorkflowButton() {
-  const [running, setRunning] = useState(false)
-
-  const handleTest = useCallback(() => {
-    setRunning(true)
-    setTimeout(() => setRunning(false), 3000)
-  }, [])
-
-  return (
-    <Panel position="top-right">
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="outline" size="sm" onClick={handleTest} disabled={running}>
-              {running ? (
-                <Loader2 className="size-4 animate-spin" data-icon="inline-start" />
-              ) : (
-                <Play className="size-4" data-icon="inline-start" />
-              )}
-              {running ? 'Running...' : 'Test Workflow'}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="bottom">
-            Test the workflow by sending emails to yourself
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
     </Panel>
   )
 }
@@ -175,32 +148,233 @@ function CreateCadencesInner() {
   const [nodes, setNodes] = useState(initialNodes)
   const [edges, setEdges] = useState(initialEdges)
 
+  const [editingNodeId, setEditingNodeId] = useState(null)
+  const [sheetOpen, setSheetOpen] = useState(false)
+
+  const [executing, setExecuting] = useState(false)
+  const [nodeStatuses, setNodeStatuses] = useState({})
+  const skipWaitRef = useRef(false)
+  const abortRef = useRef(false)
+
   const onNodesChange = useCallback(
-    changes => setNodes(n => applyNodeChanges(changes, n)), []
+    (changes) => setNodes((n) => applyNodeChanges(changes, n)),
+    []
   )
   const onEdgesChange = useCallback(
-    changes => setEdges(e => applyEdgeChanges(changes, e)), []
+    (changes) => setEdges((e) => applyEdgeChanges(changes, e)),
+    []
   )
   const onConnect = useCallback(
-    params => setEdges(e => addEdge(params, e)), []
+    (params) => setEdges((e) => addEdge(params, e)),
+    []
   )
 
+  const handleDeleteNode = useCallback(
+    (nodeId) => {
+      setNodes((prev) => prev.filter((n) => n.id !== nodeId))
+      setEdges((prev) => {
+        const incoming = prev.find((e) => e.target === nodeId)
+        const outgoing = prev.find((e) => e.source === nodeId)
+        let updated = prev.filter(
+          (e) => e.source !== nodeId && e.target !== nodeId
+        )
+        if (incoming && outgoing) {
+          updated = [
+            ...updated,
+            {
+              id: `e${incoming.source}-${outgoing.target}`,
+              source: incoming.source,
+              target: outgoing.target,
+              type: 'cadence',
+            },
+          ]
+        }
+        return updated
+      })
+    },
+    []
+  )
+
+  const handleEditNode = useCallback((nodeId) => {
+    setEditingNodeId(nodeId)
+    setSheetOpen(true)
+  }, [])
+
+  const handleSaveEmail = useCallback(
+    (emailData) => {
+      if (!editingNodeId) return
+      setNodes((prev) =>
+        prev.map((n) =>
+          n.id === editingNodeId
+            ? {
+                ...n,
+                data: {
+                  ...n.data,
+                  ...emailData,
+                  subtitle: emailData.subject || n.data.subtitle,
+                },
+              }
+            : n
+        )
+      )
+      setEditingNodeId(null)
+    },
+    [editingNodeId]
+  )
+
+  const handleAddNode = useCallback(
+    (type, sourceNodeId) => {
+      const newId = `n${++nodeIdCounter}`
+      const sourceNode = nodes.find((n) => n.id === sourceNodeId)
+      if (!sourceNode) return
+
+      const outgoingEdge = edges.find((e) => e.source === sourceNodeId)
+      let newY
+      if (outgoingEdge) {
+        const targetNode = nodes.find((n) => n.id === outgoingEdge.target)
+        newY = targetNode
+          ? (sourceNode.position.y + targetNode.position.y) / 2
+          : sourceNode.position.y + 140
+      } else {
+        newY = sourceNode.position.y + 140
+      }
+
+      const newNode = {
+        id: newId,
+        type,
+        position: { x: sourceNode.position.x, y: newY },
+        data:
+          type === 'cadence'
+            ? { title: 'New Email' }
+            : { title: 'Wait 1 day' },
+      }
+
+      setNodes((prev) => [...prev, newNode])
+      if (outgoingEdge) {
+        setEdges((prev) => [
+          ...prev.filter((e) => e.id !== outgoingEdge.id),
+          { id: `e${sourceNodeId}-${newId}`, source: sourceNodeId, target: newId, type: 'cadence' },
+          { id: `e${newId}-${outgoingEdge.target}`, source: newId, target: outgoingEdge.target, type: 'cadence' },
+        ])
+      } else {
+        setEdges((prev) => [
+          ...prev,
+          { id: `e${sourceNodeId}-${newId}`, source: sourceNodeId, target: newId, type: 'cadence' },
+        ])
+      }
+    },
+    [edges, nodes]
+  )
+
+  const handleSkipWait = useCallback(() => {
+    skipWaitRef.current = true
+  }, [])
+
+  const runExecution = useCallback(async () => {
+    abortRef.current = false
+    setExecuting(true)
+    setNodeStatuses({})
+
+    const orderedNodeIds = []
+    const edgeMap = {}
+    edges.forEach((e) => {
+      edgeMap[e.source] = e.target
+    })
+    const sourceSet = new Set(edges.map((e) => e.source))
+    const targetSet = new Set(edges.map((e) => e.target))
+    let startId = null
+    for (const id of sourceSet) {
+      if (!targetSet.has(id)) {
+        startId = id
+        break
+      }
+    }
+    if (!startId && nodes.length > 0) startId = nodes[0].id
+
+    let current = startId
+    while (current) {
+      orderedNodeIds.push(current)
+      current = edgeMap[current] || null
+    }
+
+    for (const nodeId of orderedNodeIds) {
+      if (abortRef.current) break
+
+      setNodeStatuses((prev) => ({ ...prev, [nodeId]: 'executing' }))
+
+      const node = nodes.find((n) => n.id === nodeId)
+      const isDelay = node?.type === 'delay'
+      const waitTime = isDelay ? 2000 : 1500
+
+      skipWaitRef.current = false
+      const start = Date.now()
+      while (Date.now() - start < waitTime) {
+        if (abortRef.current || skipWaitRef.current) break
+        await new Promise((r) => setTimeout(r, 100))
+      }
+
+      if (abortRef.current) break
+      setNodeStatuses((prev) => ({ ...prev, [nodeId]: 'complete' }))
+      await new Promise((r) => setTimeout(r, 300))
+    }
+
+    setExecuting(false)
+    if (!abortRef.current) {
+      setTimeout(() => setNodeStatuses({}), 2000)
+    } else {
+      setNodeStatuses({})
+    }
+  }, [edges, nodes])
+
+  const stopExecution = useCallback(() => {
+    abortRef.current = true
+  }, [])
+
+  const enrichedNodes = nodes.map((n) => ({
+    ...n,
+    data: {
+      ...n.data,
+      nodeId: n.id,
+      status: nodeStatuses[n.id] || null,
+      onEdit: handleEditNode,
+      onDelete: handleDeleteNode,
+      onRun: () => {},
+      onSkipWait: handleSkipWait,
+      onAddNode: handleAddNode,
+    },
+  }))
+
+  const enrichedEdges = edges.map((e) => ({
+    ...e,
+    type: e.type || 'cadence',
+  }))
+
+  const editingNode = nodes.find((n) => n.id === editingNodeId)
+
   return (
-    <SidebarProvider style={{ '--sidebar-width': '220px' }} className="!min-h-0 h-full !bg-transparent">
-      <Sidebar collapsible="none" className="cadence-sidebar border-r border-border !bg-transparent">
+    <SidebarProvider
+      style={{ '--sidebar-width': '220px' }}
+      className="!min-h-0 h-full !bg-transparent"
+    >
+      <Sidebar
+        collapsible="none"
+        className="cadence-sidebar border-r border-border !bg-transparent"
+      >
         <SidebarContent>
           <SidebarGroup>
             <SidebarGroupLabel>Cadences</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {cadences.map(c => (
+                {cadences.map((c) => (
                   <SidebarMenuItem key={c.id}>
                     <SidebarMenuButton
                       isActive={activeCadence.id === c.id}
                       onClick={() => setActiveCadence(c)}
                     >
                       <span>{c.name}</span>
-                      <span className="ml-auto text-xs text-muted-foreground">{c.steps} steps</span>
+                      <span className="ml-auto text-xs text-muted-foreground">
+                        {c.steps} steps
+                      </span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
@@ -217,12 +391,14 @@ function CreateCadencesInner() {
 
       <SidebarInset className="flex flex-col">
         <div className="flex items-center gap-3 px-4 h-12 border-b border-border shrink-0">
-          <h1 className="text-sm font-medium text-foreground">{activeCadence.name}</h1>
+          <h1 className="text-sm font-medium text-foreground">
+            {activeCadence.name}
+          </h1>
         </div>
         <div className="flex-1">
           <ReactFlow
-            nodes={nodes}
-            edges={edges}
+            nodes={enrichedNodes}
+            edges={enrichedEdges}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
@@ -234,32 +410,48 @@ function CreateCadencesInner() {
             proOptions={{ hideAttribution: true }}
             style={{ background: 'transparent' }}
           >
-            <Background color="rgba(255,255,255,0.15)" variant="dots" gap={20} size={1.5} />
-            <TestWorkflowButton />
+            <Background
+              color="rgba(255,255,255,0.15)"
+              variant="dots"
+              gap={20}
+              size={1.5}
+            />
+            <Panel position="top-right">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={executing ? stopExecution : runExecution}
+                    >
+                      {executing ? (
+                        <Square className="size-3.5" data-icon="inline-start" />
+                      ) : (
+                        <Play className="size-3.5" data-icon="inline-start" />
+                      )}
+                      {executing ? 'Stop Workflow' : 'Test Workflow'}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    {executing
+                      ? 'Stop the current test execution'
+                      : 'Test the workflow by sending emails to yourself'}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </Panel>
             <ZoomSlider />
-            <svg>
-              <defs>
-                <linearGradient id="cadence-edge-gradient">
-                  <stop offset="0%" stopColor="#a855f7" />
-                  <stop offset="100%" stopColor="#2a8af6" />
-                </linearGradient>
-                <marker
-                  id="cadence-edge-circle"
-                  viewBox="-5 -5 10 10"
-                  refX="0"
-                  refY="0"
-                  markerUnits="strokeWidth"
-                  markerWidth="10"
-                  markerHeight="10"
-                  orient="auto"
-                >
-                  <circle stroke="#2a8af6" strokeOpacity="0.75" r="2" cx="0" cy="0" />
-                </marker>
-              </defs>
-            </svg>
           </ReactFlow>
         </div>
       </SidebarInset>
+
+      <EmailEditSheet
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        nodeData={editingNode?.data}
+        onSave={handleSaveEmail}
+      />
     </SidebarProvider>
   )
 }
