@@ -55,17 +55,13 @@ const data = {
     },
     {
       title: "Reachouts",
-      url: "/reachouts/company",
+      url: "/tracker",
       icon: Icons.BookUser,
       isActive: true,
       items: [
         {
-          title: "By Company",
-          url: "/reachouts/company",
-        },
-        {
-          title: "By People",
-          url: "/reachouts/people",
+          title: "Tracker",
+          url: "/tracker",
         },
       ],
     }

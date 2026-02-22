@@ -8,8 +8,7 @@ import { Meteors } from '@/components/ui/meteors'
 
 import CreateDraft    from '@/pages/CreateDraft'
 import CreateCadences from '@/pages/CreateCadences'
-import ByCompany      from '@/pages/ByCompany'
-import ByPeople       from '@/pages/ByPeople'
+import Tracker        from '@/pages/Tracker'
 import Documentation  from '@/pages/Documentation'
 import Settings       from '@/pages/Settings'
 
@@ -30,8 +29,7 @@ export default function App() {
                 <Routes>
                   <Route path="/send-emails/draft"    element={<CreateDraft />} />
                   <Route path="/send-emails/cadences" element={<CreateCadences />} />
-                  <Route path="/reachouts/company"    element={<ByCompany />} />
-                  <Route path="/reachouts/people"     element={<ByPeople />} />
+                  <Route path="/tracker"               element={<Tracker />} />
                   <Route path="/documentation"        element={<Documentation />} />
                   <Route path="/settings"             element={<Settings />} />
                 </Routes>

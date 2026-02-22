@@ -89,7 +89,7 @@ const columns = [
   },
 ]
 
-export default function ByCompany() {
+export default function Tracker() {
   const [sorting, setSorting]               = useState([])
   const [columnFilters, setColumnFilters]   = useState([])
   const [columnVisibility, setColumnVisibility] = useState({})
@@ -109,7 +109,7 @@ export default function ByCompany() {
 
   return (
     <div className="p-6">
-      <h1 className="text-lg font-medium text-foreground mb-6">By Company</h1>
+      <h1 className="text-lg font-medium text-foreground mb-6">Tracker</h1>
 
       <div className="flex items-center gap-3 mb-4">
         <div className="relative max-w-sm w-full">
