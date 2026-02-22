@@ -11,7 +11,7 @@ import {
   Background,
 } from '@xyflow/react'
 import '@xyflow/react/dist/base.css'
-import { Minus, Plus, ArrowRight, Maximize, Play, Square } from 'lucide-react'
+import { Minus, Plus, ArrowRight, Maximize, Play, Square, Pencil, Trash } from 'lucide-react'
 
 import CadenceNode from '@/components/flow/CadenceNode'
 import DelayNode from '@/components/flow/DelayNode'
@@ -28,6 +28,7 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
+  SidebarMenuAction,
   SidebarProvider,
   SidebarInset,
 } from '@/components/ui/sidebar'
@@ -40,7 +41,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 
-const cadences = [
+const initialCadences = [
   { id: '1', name: 'Welcome Sequence', steps: 3 },
   { id: '2', name: 'Cold Outreach', steps: 5 },
   { id: '3', name: 'Follow-up Series', steps: 4 },
@@ -144,7 +145,10 @@ function ZoomSlider() {
 }
 
 function CreateCadencesInner() {
-  const [activeCadence, setActiveCadence] = useState(cadences[0])
+  const [cadences, setCadences] = useState(initialCadences)
+  const [activeCadence, setActiveCadence] = useState(initialCadences[0])
+  const [editingCadenceId, setEditingCadenceId] = useState(null)
+  const [editingCadenceName, setEditingCadenceName] = useState('')
   const [nodes, setNodes] = useState(initialNodes)
   const [edges, setEdges] = useState(initialEdges)
 
@@ -372,15 +376,60 @@ function CreateCadencesInner() {
               <SidebarMenu>
                 {cadences.map((c) => (
                   <SidebarMenuItem key={c.id}>
-                    <SidebarMenuButton
-                      isActive={activeCadence.id === c.id}
-                      onClick={() => setActiveCadence(c)}
+                    {editingCadenceId === c.id ? (
+                      <input
+                        className="w-full rounded-md bg-transparent px-2 py-1.5 text-sm text-sidebar-foreground outline-none ring-1 ring-sidebar-ring"
+                        value={editingCadenceName}
+                        onChange={(e) => setEditingCadenceName(e.target.value)}
+                        onBlur={() => {
+                          setCadences((prev) =>
+                            prev.map((item) =>
+                              item.id === c.id ? { ...item, name: editingCadenceName } : item
+                            )
+                          )
+                          if (activeCadence.id === c.id) {
+                            setActiveCadence((prev) => ({ ...prev, name: editingCadenceName }))
+                          }
+                          setEditingCadenceId(null)
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') e.target.blur()
+                          if (e.key === 'Escape') setEditingCadenceId(null)
+                        }}
+                        autoFocus
+                      />
+                    ) : (
+                      <SidebarMenuButton
+                        isActive={activeCadence.id === c.id}
+                        onClick={() => setActiveCadence(c)}
+                      >
+                        <span>{c.name}</span>
+                      </SidebarMenuButton>
+                    )}
+                    <SidebarMenuAction
+                      showOnHover
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setEditingCadenceId(c.id)
+                        setEditingCadenceName(c.name)
+                      }}
+                      style={{ right: '24px' }}
                     >
-                      <span>{c.name}</span>
-                      <span className="ml-auto text-xs text-muted-foreground">
-                        {c.steps} steps
-                      </span>
-                    </SidebarMenuButton>
+                      <Pencil className="size-3" />
+                    </SidebarMenuAction>
+                    <SidebarMenuAction
+                      showOnHover
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setCadences((prev) => prev.filter((item) => item.id !== c.id))
+                        if (activeCadence.id === c.id) {
+                          const remaining = cadences.filter((item) => item.id !== c.id)
+                          if (remaining.length) setActiveCadence(remaining[0])
+                        }
+                      }}
+                    >
+                      <Trash className="size-3" />
+                    </SidebarMenuAction>
                   </SidebarMenuItem>
                 ))}
               </SidebarMenu>
@@ -395,11 +444,6 @@ function CreateCadencesInner() {
       </Sidebar>
 
       <SidebarInset className="flex flex-col">
-        <div className="flex items-center gap-3 px-4 h-12 border-b border-border shrink-0">
-          <h1 className="text-sm font-medium text-foreground">
-            {activeCadence.name}
-          </h1>
-        </div>
         <div className="flex-1">
           <ReactFlow
             nodes={enrichedNodes}

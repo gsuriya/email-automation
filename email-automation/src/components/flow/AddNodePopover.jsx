@@ -25,20 +25,20 @@ export default function AddNodePopover({ onAdd }) {
           <Plus className="size-3 text-black" strokeWidth={2.5} />
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-48 p-2" side="right" align="center">
-        <p className="px-2 py-1.5 text-xs font-semibold text-foreground">Add Node</p>
+      <PopoverContent className="w-48 p-2 bg-white border-gray-200 shadow-lg" side="right" align="center">
+        <p className="px-2 py-1.5 text-xs font-semibold text-black">Add Node</p>
         <button
-          className="flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-sm hover:bg-accent transition-colors"
+          className="flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-sm text-black hover:bg-gray-100 transition-colors"
           onClick={() => handleSelect('cadence')}
         >
-          <Mail className="size-4 text-muted-foreground" />
+          <Mail className="size-4 text-gray-500" />
           <span>Email Step</span>
         </button>
         <button
-          className="flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-sm hover:bg-accent transition-colors"
+          className="flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-sm text-black hover:bg-gray-100 transition-colors"
           onClick={() => handleSelect('delay')}
         >
-          <Clock className="size-4 text-muted-foreground" />
+          <Clock className="size-4 text-gray-500" />
           <span>Wait Block</span>
         </button>
       </PopoverContent>
