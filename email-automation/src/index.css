@@ -137,12 +137,17 @@
   background: oklch(0.255 0.006 240 / 50%) !important;
 }
 
+/* React Flow — node hover border */
+.react-flow__node:hover > div {
+  box-shadow: 0 0 0 2px black;
+}
+
 /* React Flow — small visible handle dots */
 .react-flow__handle {
   width: 8px !important;
   height: 8px !important;
   background: #d1d5db !important;
-  border: 1.5px solid #9ca3af !important;
+  border: 1.5px solid #c0c4ca !important;
 }
 
 /* React Flow — Dashed edges with marching-ants animation */

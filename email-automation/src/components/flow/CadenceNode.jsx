@@ -1,6 +1,6 @@
 import { memo } from 'react'
 import { Position, useConnection } from '@xyflow/react'
-import { Mail, Settings, Trash2 } from 'lucide-react'
+import { Rocket, Settings, Trash } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { BaseHandle } from '@/components/base-handle'
 import { BaseNode, BaseNodeContent } from '@/components/base-node'
@@ -18,11 +18,11 @@ const CadenceNode = memo(function CadenceNode({ data }) {
         : ''
 
   return (
-    <BaseNode className={cn('bg-white text-black border-gray-200 min-w-[220px]', statusClass)}>
+    <BaseNode className={cn('bg-white text-black border-gray-300 min-w-[220px]', statusClass)}>
       <BaseHandle type="target" position={Position.Top} />
       <BaseNodeContent className="flex-row items-center gap-2 py-2">
-        <Mail className="size-4 shrink-0" strokeWidth={2.5} />
-        <span className="font-semibold text-sm flex-1">Email</span>
+        <Rocket className="size-4 shrink-0" strokeWidth={2.5} />
+        <span className="font-semibold text-sm flex-1">Email Node</span>
         <button
           className="nodrag nopan p-0.5 rounded hover:bg-gray-100 transition-colors"
           onClick={(e) => {
@@ -30,7 +30,7 @@ const CadenceNode = memo(function CadenceNode({ data }) {
             data.onEdit?.(data.nodeId)
           }}
         >
-          <Settings className="size-3.5 text-gray-500" strokeWidth={2} />
+          <Settings className="size-3.5 text-blue-500" strokeWidth={2} />
         </button>
         <button
           className="nodrag nopan p-0.5 rounded hover:bg-red-50 transition-colors"
@@ -39,7 +39,7 @@ const CadenceNode = memo(function CadenceNode({ data }) {
             data.onDelete?.(data.nodeId)
           }}
         >
-          <Trash2 className="size-3.5 text-gray-500 hover:text-red-500" strokeWidth={2} />
+          <Trash className="size-3.5 text-black hover:text-red-500" strokeWidth={2} />
         </button>
       </BaseNodeContent>
       {data.hasOutgoingEdge ? (

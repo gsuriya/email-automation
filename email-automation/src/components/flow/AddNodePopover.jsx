@@ -18,13 +18,12 @@ export default function AddNodePopover({ onAdd }) {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          size="icon-xs"
-          className="nodrag nopan rounded-full size-6 border-border bg-card shadow-sm hover:bg-accent"
+        <button
+          style={{ background: '#d1d5db', borderColor: '#c0c4ca' }}
+          className="nodrag nopan flex items-center justify-center rounded-full size-6 border shadow-sm hover:brightness-95 transition-colors"
         >
-          <Plus className="size-3 text-muted-foreground" strokeWidth={2.5} />
-        </Button>
+          <Plus className="size-3 text-black" strokeWidth={2.5} />
+        </button>
       </PopoverTrigger>
       <PopoverContent className="w-48 p-2" side="right" align="center">
         <p className="px-2 py-1.5 text-xs font-semibold text-foreground">Add Node</p>

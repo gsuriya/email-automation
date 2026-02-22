@@ -1,6 +1,6 @@
 import { memo } from 'react'
 import { Position, useConnection } from '@xyflow/react'
-import { Clock, Settings, Trash2, SkipForward } from 'lucide-react'
+import { Clock, Settings, Trash, SkipForward } from 'lucide-react'
 import {
   Tooltip,
   TooltipContent,
@@ -24,11 +24,11 @@ const DelayNode = memo(function DelayNode({ data }) {
         : ''
 
   return (
-    <BaseNode className={cn('bg-white text-black border-gray-200 border-dashed min-w-[200px]', statusClass)}>
+    <BaseNode className={cn('bg-white text-black border-gray-300 min-w-[170px]', statusClass)}>
       <BaseHandle type="target" position={Position.Top} />
       <BaseNodeContent className="flex-row items-center gap-2 py-2">
         <Clock className="size-4 shrink-0" strokeWidth={2.5} />
-        <span className="font-semibold text-sm flex-1">{data.title}</span>
+        <span className="font-semibold text-sm flex-1">Wait Node</span>
         {data.status === 'executing' && (
           <TooltipProvider>
             <Tooltip>
@@ -54,7 +54,7 @@ const DelayNode = memo(function DelayNode({ data }) {
             data.onEdit?.(data.nodeId)
           }}
         >
-          <Settings className="size-3.5 text-gray-500" strokeWidth={2} />
+          <Settings className="size-3.5 text-blue-500" strokeWidth={2} />
         </button>
         <button
           className="nodrag nopan p-0.5 rounded hover:bg-red-50 transition-colors"
@@ -63,7 +63,7 @@ const DelayNode = memo(function DelayNode({ data }) {
             data.onDelete?.(data.nodeId)
           }}
         >
-          <Trash2 className="size-3.5 text-gray-500 hover:text-red-500" strokeWidth={2} />
+          <Trash className="size-3.5 text-black hover:text-red-500" strokeWidth={2} />
         </button>
       </BaseNodeContent>
       {data.hasOutgoingEdge ? (
