@@ -451,7 +451,7 @@ function CreateCadencesInner() {
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
-            fitView
+            defaultViewport={{ x: 0, y: 0, zoom: 1 }}
             nodeTypes={nodeTypes}
             edgeTypes={edgeTypes}
             defaultEdgeOptions={defaultEdgeOptions}
