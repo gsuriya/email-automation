@@ -137,10 +137,12 @@
   background: oklch(0.255 0.006 240 / 50%) !important;
 }
 
-/* React Flow — hide the default handle dots but keep ButtonHandle children visible */
+/* React Flow — small visible handle dots */
 .react-flow__handle {
-  background: transparent !important;
-  border: none !important;
+  width: 8px !important;
+  height: 8px !important;
+  background: #d1d5db !important;
+  border: 1.5px solid #9ca3af !important;
 }
 
 /* React Flow — Dashed edges with marching-ants animation */

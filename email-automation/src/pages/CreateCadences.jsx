@@ -336,6 +336,7 @@ function CreateCadencesInner() {
       ...n.data,
       nodeId: n.id,
       status: nodeStatuses[n.id] || null,
+      hasOutgoingEdge: edges.some((e) => e.source === n.id),
       onEdit: handleEditNode,
       onDelete: handleDeleteNode,
       onRun: () => {},
@@ -347,6 +348,10 @@ function CreateCadencesInner() {
   const enrichedEdges = edges.map((e) => ({
     ...e,
     type: e.type || 'cadence',
+    data: {
+      onAddNode: handleAddNode,
+      sourceNodeId: e.source,
+    },
   }))
 
   const editingNode = nodes.find((n) => n.id === editingNodeId)
