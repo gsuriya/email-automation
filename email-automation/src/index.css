@@ -126,6 +126,132 @@
   }
 }
 
+/* Glow CTA button */
+.glow-cta {
+  position: relative;
+  display: inline-flex;
+  cursor: pointer;
+  transition: opacity 0.3s ease-in-out;
+  align-items: center;
+  border: none;
+  background: none;
+  padding: 0;
+}
+
+.glow-cta::after {
+  position: absolute;
+  top: -0.3em;
+  left: -1.2em;
+  z-index: 1;
+  width: calc(100% + 2.4em);
+  height: calc(100% + 0.6em);
+  background-image: linear-gradient(225deg, #32c5ff, #b620e0 51%, #f7b500);
+  border-radius: 100%;
+  opacity: 0.5;
+  filter: blur(0.8em) saturate(1.2);
+  transition: opacity 0.25s, transform 0.2s;
+  content: "";
+}
+
+.glow-cta:hover::after {
+  opacity: 0.75;
+}
+
+.glow-cta-text {
+  position: relative;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  padding: 6px 18px;
+  font-weight: 600;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  border: none;
+  border-radius: 50px;
+  z-index: 2;
+  white-space: nowrap;
+  color: #111;
+}
+
+.glow-cta-text::after,
+.glow-cta-text::before {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  content: "";
+  border-radius: 50px;
+}
+
+.glow-cta-text::before {
+  top: -0.5em;
+  left: -1.2em;
+  z-index: -1;
+  width: calc(100% + 2.4em);
+  height: calc(100% + 1em);
+  background-image: linear-gradient(225deg, #32c5ff, #b620e0 51%, #f7b500);
+  opacity: 0.35;
+  filter: blur(0.7em) saturate(1.2);
+  border-radius: 100%;
+}
+
+.glow-cta-text::after {
+  z-index: -1;
+  background: linear-gradient(135deg, #ffffff, #c8c8c8 150%);
+  backface-visibility: hidden;
+  opacity: 1;
+  transition: opacity 0.2s;
+  border-radius: 50px;
+}
+
+@media (hover: hover) {
+  .glow-cta:hover .glow-cta-text::after {
+    opacity: 0.75;
+  }
+}
+
+/* TinyMCE — blend toolbar into card */
+.tox.tox-tinymce,
+.tox.tox-tinymce:focus,
+.tox.tox-tinymce:focus-within,
+.tox.tox-tinymce--focused {
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+.tox .tox-toolbar-overlord,
+.tox .tox-toolbar__primary,
+.tox-toolbar,
+.tox .tox-editor-header {
+  background: #0e1117 !important;
+  border-bottom: 1px solid var(--color-border) !important;
+  box-shadow: none !important;
+}
+.tox .tox-toolbar__group {
+  border: none !important;
+}
+.tox .tox-edit-area {
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+.tox .tox-edit-area__iframe {
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+.tox .tox-edit-area__iframe:focus {
+  outline: none !important;
+}
+.tox .tox-statusbar {
+  background: transparent !important;
+  border-top: 1px solid var(--color-border) !important;
+  opacity: 0.5;
+}
+
 /* React Flow — transparent canvas so meteors show through */
 .react-flow.dark {
   background: transparent !important;

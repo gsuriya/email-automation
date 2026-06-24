@@ -5,6 +5,7 @@ import { NavMain } from "@/components/nav-main"
 import { NavProjects } from "@/components/nav-projects"
 import { NavUser } from "@/components/nav-user"
 import { TeamSwitcher } from "@/components/team-switcher"
+import { useAuth } from "@/components/AuthGate"
 import {
   Sidebar,
   SidebarContent,
@@ -15,11 +16,6 @@ import {
 
 // This is sample data.
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   teams: [
     {
       name: "Test",
@@ -66,6 +62,24 @@ const data = {
       ],
     }
   ],
+  coldEmailing: [
+    {
+      title: "Cold Emailing Script",
+      url: "/cold-emailing/spreadsheet",
+      icon: Icons.Send,
+      isActive: true,
+      items: [
+        {
+          title: "Stage Emails",
+          url: "/cold-emailing/spreadsheet",
+        },
+        {
+          title: "Create Drafts",
+          url: "/cold-emailing/drafts",
+        },
+      ],
+    },
+  ],
   projects: [
     {
       name: "Documentation",
@@ -83,6 +97,8 @@ const data = {
 export function AppSidebar({
   ...props
 }) {
+  const { user } = useAuth()
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -90,10 +106,11 @@ export function AppSidebar({
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
+        <NavMain label="Cold Emailing Script" items={data.coldEmailing} />
         <NavProjects projects={data.projects} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={user} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

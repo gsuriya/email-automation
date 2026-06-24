@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import {
   flexRender,
   getCoreRowModel,
@@ -8,6 +8,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table"
 import { ArrowUpDown, ChevronDown, Search } from "lucide-react"
+import { toast } from "sonner"
 
 import {
   Table,
@@ -25,77 +26,80 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { api } from "@/lib/api"
 
-const companies = [
-  { id: "1", name: "Acme Corp",     company: "Acme Corp",     contact: "tony@acmecorp.com",     cadence: { step: 3, total: 3 } },
-  { id: "2", name: "Globex",        company: "Globex",        contact: "zoey@globex.io",        cadence: { step: 1, total: 5 } },
-  { id: "3", name: "Initech",       company: "Initech",       contact: "jane@initech.com",      cadence: { step: 0, total: 4 } },
-  { id: "4", name: "Umbrella Corp", company: "Umbrella Corp", contact: "william@umbrella.net",  cadence: { step: 5, total: 8 } },
-  { id: "5", name: "Stark Ind.",    company: "Stark Ind.",    contact: "pepper@starkindustries.com", cadence: { step: 2, total: 2 } },
-  { id: "6", name: "Wayne Ent.",    company: "Wayne Ent.",    contact: "lucius@wayneent.com",   cadence: null },
-]
-
-function CadenceBadge({ cadence }) {
-  if (!cadence)
-    return <span className="text-muted-foreground text-xs">Not started</span>
-
-  if (cadence.step >= cadence.total)
-    return <span className="text-emerald-400 text-xs font-medium">Completed</span>
-
-  if (cadence.step === 0)
-    return <span className="text-muted-foreground text-xs">Not sent</span>
-
-  return (
-    <span className="text-xs">
-      <span className="text-foreground font-medium">{cadence.step}/{cadence.total}</span>
-      <span className="text-muted-foreground ml-1">sent</span>
-    </span>
-  )
+function formatSentAt(value) {
+  if (!value) return "Not sent"
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(value))
 }
 
-const columns = [
-  {
-    accessorKey: "name",
-    header: ({ column }) => (
-      <Button variant="ghost" className="-ml-4 h-8" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-        Name <ArrowUpDown className="ml-2 size-3" />
-      </Button>
-    ),
-  },
-  {
-    accessorKey: "company",
-    header: ({ column }) => (
-      <Button variant="ghost" className="-ml-4 h-8" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-        Company <ArrowUpDown className="ml-2 size-3" />
-      </Button>
-    ),
-  },
-  {
-    accessorKey: "contact",
-    header: ({ column }) => (
-      <Button variant="ghost" className="-ml-4 h-8" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-        Contact <ArrowUpDown className="ml-2 size-3" />
-      </Button>
-    ),
-    cell: ({ row }) => (
-      <span className="text-muted-foreground">{row.getValue("contact")}</span>
-    ),
-  },
-  {
-    accessorKey: "cadence",
-    header: "Cadence Status",
-    cell: ({ row }) => <CadenceBadge cadence={row.getValue("cadence")} />,
-    enableSorting: false,
-  },
-]
+function SentBadge({ status }) {
+  if (status === "sent") return <span className="text-emerald-400 text-xs font-medium">Sent</span>
+  return <span className="text-muted-foreground text-xs">{status || "Unknown"}</span>
+}
 
 export default function Tracker() {
-  const [sorting, setSorting]               = useState([])
-  const [columnFilters, setColumnFilters]   = useState([])
+  const [entries, setEntries] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [sorting, setSorting] = useState([])
+  const [columnFilters, setColumnFilters] = useState([])
   const [columnVisibility, setColumnVisibility] = useState({})
 
+  useEffect(() => {
+    api.listTrackerEntries()
+      .then(({ entries }) => setEntries(entries))
+      .catch((err) => toast.error(err.message))
+      .finally(() => setLoading(false))
+  }, [])
+
+  const columns = useMemo(() => [
+    {
+      accessorKey: "name",
+      header: ({ column }) => (
+        <Button variant="ghost" className="-ml-4 h-8" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+          Name <ArrowUpDown className="ml-2 size-3" />
+        </Button>
+      ),
+    },
+    {
+      accessorKey: "company",
+      header: ({ column }) => (
+        <Button variant="ghost" className="-ml-4 h-8" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+          Company <ArrowUpDown className="ml-2 size-3" />
+        </Button>
+      ),
+    },
+    {
+      accessorKey: "email",
+      header: ({ column }) => (
+        <Button variant="ghost" className="-ml-4 h-8" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+          Email <ArrowUpDown className="ml-2 size-3" />
+        </Button>
+      ),
+      cell: ({ row }) => <span className="text-muted-foreground">{row.getValue("email")}</span>,
+    },
+    {
+      accessorKey: "draft_template_name",
+      header: "Draft Sent",
+      cell: ({ row }) => <span className="text-muted-foreground">{row.getValue("draft_template_name")}</span>,
+    },
+    {
+      accessorKey: "status",
+      header: "Status",
+      cell: ({ row }) => <SentBadge status={row.getValue("status")} />,
+    },
+    {
+      accessorKey: "sent_at",
+      header: "Sent At",
+      cell: ({ row }) => <span className="text-muted-foreground">{formatSentAt(row.getValue("sent_at"))}</span>,
+    },
+  ], [])
+
   const table = useReactTable({
-    data: companies,
+    data: entries,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -156,9 +160,15 @@ export default function Tracker() {
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows.length ? (
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="h-24 text-center text-muted-foreground">
+                  Loading...
+                </TableCell>
+              </TableRow>
+            ) : table.getRowModel().rows.length ? (
               table.getRowModel().rows.map(row => (
-                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                <TableRow key={row.id}>
                   {row.getVisibleCells().map(cell => (
                     <TableCell key={cell.id}>
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -168,8 +178,8 @@ export default function Tracker() {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
-                  No results.
+                <TableCell colSpan={columns.length} className="h-24 text-center text-muted-foreground">
+                  No sent emails yet.
                 </TableCell>
               </TableRow>
             )}
