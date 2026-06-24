@@ -29,6 +29,7 @@ router.post('/send-all', asyncRoute(async (req, res) => {
         to: item.to,
         subject: item.rendered.subject,
         body: item.rendered.body,
+        attachments: item.attachments,
       })
 
       const { error: trackerError } = await supabase.from('tracker_entries').insert({
@@ -40,6 +41,7 @@ router.post('/send-all', asyncRoute(async (req, res) => {
         draft_template_name: item.templateName,
         subject: item.rendered.subject,
         body: item.rendered.body,
+        attachments: item.attachments,
         gmail_message_id: gmailResult.id,
         status: 'sent',
       })

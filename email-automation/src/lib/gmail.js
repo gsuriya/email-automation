@@ -13,11 +13,11 @@ export async function checkAuthStatus() {
   return api.authStatus()
 }
 
-export async function sendEmail({ to, cc, bcc, subject, body }) {
+export async function sendEmail({ to, cc, bcc, subject, body, attachments }) {
   const res = await fetch('/api/send-email', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ to, cc, bcc, subject, body }),
+    body: JSON.stringify({ to, cc, bcc, subject, body, attachments }),
   })
   return res.json()
 }

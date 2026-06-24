@@ -23,6 +23,7 @@ export function planColdEmailBatch({ rows, templates }) {
       to: row.email,
       templateId: template.id,
       templateName: template.name,
+      attachments: Array.isArray(template.attachments) ? template.attachments : [],
       recipient: {
         name: row.name || '',
         company: row.company || '',

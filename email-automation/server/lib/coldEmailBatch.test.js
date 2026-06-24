@@ -28,6 +28,14 @@ describe('planColdEmailBatch', () => {
           name: 'Intro',
           subject: 'Quick note for {{company}}',
           body: 'Hi {{name}}, reaching out at {{email}}.',
+          attachments: [
+            {
+              name: 'resume.pdf',
+              mimeType: 'application/pdf',
+              size: 4,
+              content: 'dGVzdA==',
+            },
+          ],
         },
       ],
     })
@@ -38,6 +46,14 @@ describe('planColdEmailBatch', () => {
         to: 'nina@northwind.com',
         templateId: 'template-1',
         templateName: 'Intro',
+        attachments: [
+          {
+            name: 'resume.pdf',
+            mimeType: 'application/pdf',
+            size: 4,
+            content: 'dGVzdA==',
+          },
+        ],
         recipient: {
           name: 'Nina',
           company: 'Northwind',

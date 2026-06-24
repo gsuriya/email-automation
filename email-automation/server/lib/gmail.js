@@ -14,7 +14,64 @@ export function getOAuth2Client(redirectUri = process.env.GOOGLE_REDIRECT_URI) {
   )
 }
 
-export function buildRawEmail({ to, cc, bcc, subject, body }) {
+function encodeMimeWord(value = '') {
+  return `=?UTF-8?B?${Buffer.from(String(value), 'utf8').toString('base64')}?=`
+}
+
+function wrapBase64(value = '') {
+  return String(value).replace(/(.{76})/g, '$1\r\n')
+}
+
+function getAttachmentContent(attachment) {
+  const content = String(attachment?.content || '')
+  const [, dataUrlContent] = content.match(/^data:[^;]+;base64,(.*)$/) || []
+  return (dataUrlContent || content).replace(/\s/g, '')
+}
+
+export function normalizeEmailAttachments(attachments = []) {
+  return attachments
+    .filter((attachment) => attachment?.name && attachment?.content)
+    .map((attachment) => ({
+      name: String(attachment.name),
+      mimeType: String(attachment.mimeType || 'application/octet-stream'),
+      size: Number(attachment.size || 0),
+      content: getAttachmentContent(attachment),
+    }))
+}
+
+export function buildRawEmail({ to, cc, bcc, subject, body, attachments = [] }) {
+  const normalizedAttachments = normalizeEmailAttachments(attachments)
+
+  if (normalizedAttachments.length) {
+    const boundary = `email_automation_${Date.now().toString(36)}_${Math.random().toString(36).slice(2)}`
+    const lines = [
+      `To: ${to}`,
+      cc ? `Cc: ${cc}` : null,
+      bcc ? `Bcc: ${bcc}` : null,
+      'MIME-Version: 1.0',
+      `Subject: ${encodeMimeWord(subject)}`,
+      `Content-Type: multipart/mixed; boundary="${boundary}"`,
+      '',
+      `--${boundary}`,
+      'Content-Type: text/plain; charset="UTF-8"',
+      'Content-Transfer-Encoding: base64',
+      '',
+      wrapBase64(Buffer.from(body || '', 'utf8').toString('base64')),
+      ...normalizedAttachments.flatMap((attachment) => [
+        `--${boundary}`,
+        `Content-Type: ${attachment.mimeType}; name="${encodeMimeWord(attachment.name)}"`,
+        'Content-Transfer-Encoding: base64',
+        `Content-Disposition: attachment; filename="${encodeMimeWord(attachment.name)}"`,
+        '',
+        wrapBase64(attachment.content),
+      ]),
+      `--${boundary}--`,
+      '',
+    ].filter((line) => line !== null)
+
+    return Buffer.from(lines.join('\r\n')).toString('base64url')
+  }
+
   const lines = [
     `To: ${to}`,
     cc ? `Cc: ${cc}` : null,
@@ -133,12 +190,12 @@ export async function getAuthorizedGmail(email) {
   }
 }
 
-export async function sendGmailMessage({ userEmail, to, cc, bcc, subject, body }) {
+export async function sendGmailMessage({ userEmail, to, cc, bcc, subject, body, attachments }) {
   const { gmail } = await getAuthorizedGmail(userEmail)
   const result = await gmail.users.messages.send({
     userId: 'me',
     requestBody: {
-      raw: buildRawEmail({ to, cc, bcc, subject, body }),
+      raw: buildRawEmail({ to, cc, bcc, subject, body, attachments }),
     },
   })
 
