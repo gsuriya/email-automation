@@ -33,36 +33,7 @@ const data = {
       plan: "Free",
     },
   ],
-  navMain: [
-    {
-      title: "Send Emails",
-      url: "/send-emails/draft",
-      icon: Icons.Mail,
-      items: [
-        {
-          title: "Create Draft",
-          url: "/send-emails/draft",
-        },
-        {
-          title: "Create Cadences",
-          url: "/send-emails/cadences",
-        },
-      ],
-    },
-    {
-      title: "Reachouts",
-      url: "/tracker",
-      icon: Icons.BookUser,
-      isActive: true,
-      items: [
-        {
-          title: "Tracker",
-          url: "/tracker",
-        },
-      ],
-    }
-  ],
-  coldEmailing: [
+  primary: [
     {
       title: "Cold Emailing Script",
       url: "/cold-emailing/spreadsheet",
@@ -79,15 +50,44 @@ const data = {
         },
       ],
     },
+    {
+      title: "Reachouts",
+      url: "/tracker",
+      icon: Icons.BookUser,
+      isActive: true,
+      items: [
+        {
+          title: "Tracker",
+          url: "/tracker",
+        },
+      ],
+    }
   ],
-  projects: [
+  comingSoonMain: [
+    {
+      title: "Send Emails",
+      url: "/send-emails/draft",
+      icon: Icons.Mail,
+      items: [
+        {
+          title: "Create Draft",
+          url: "/send-emails/draft",
+        },
+        {
+          title: "Create Cadences",
+          url: "/send-emails/cadences",
+        },
+      ],
+    },
+  ],
+  comingSoonLinks: [
     {
       name: "Documentation",
       url: "/documentation",
       icon: Icons.BookOpen,
     },
     {
-      name: "Settings",
+      name: "Resources",
       url: "/settings",
       icon: Icons.Settings2,
     }
@@ -105,9 +105,9 @@ export function AppSidebar({
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavMain label="Cold Emailing Script" items={data.coldEmailing} />
-        <NavProjects projects={data.projects} />
+        <NavMain label={null} items={data.primary} />
+        <NavMain label="Coming Soon" items={data.comingSoonMain} />
+        <NavProjects projects={data.comingSoonLinks} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={user} />

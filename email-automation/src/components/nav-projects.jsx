@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import {
   SidebarGroup,
+  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuAction,
   SidebarMenuButton,
@@ -19,12 +20,14 @@ import {
 } from "@/components/ui/sidebar"
 
 export function NavProjects({
-  projects
+  projects,
+  label,
 }) {
   const { isMobile } = useSidebar()
 
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
+      {label ? <SidebarGroupLabel>{label}</SidebarGroupLabel> : null}
       <SidebarMenu>
         {projects.map((item) => (
           <SidebarMenuItem key={item.name}>
