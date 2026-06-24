@@ -24,12 +24,23 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 
+function formatDisplayName(user) {
+  const name = user?.name && user.name !== user.email ? user.name.trim() : ''
+  if (!name) return user?.email || 'User'
+
+  const parts = name.split(/\s+/).filter(Boolean)
+  if (parts.length === 1) return parts[0]
+
+  return `${parts[0]} ${parts[parts.length - 1][0].toUpperCase()}.`
+}
+
 export function NavUser({
   user
 }) {
   const { isMobile } = useSidebar()
   const { logout } = useAuth()
-  const fallback = (user?.name || user?.email || 'User')
+  const displayName = formatDisplayName(user)
+  const fallback = (displayName || user?.email || 'User')
     .split(/\s+/)
     .filter(Boolean)
     .slice(0, 2)
@@ -49,7 +60,7 @@ export function NavUser({
                 <AvatarFallback className="rounded-lg">{fallback}</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{user?.name || user?.email}</span>
+                <span className="truncate font-medium">{displayName}</span>
                 <span className="truncate text-xs">{user?.email}</span>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
@@ -67,7 +78,7 @@ export function NavUser({
                   <AvatarFallback className="rounded-lg">{fallback}</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user?.name || user?.email}</span>
+                  <span className="truncate font-medium">{displayName}</span>
                   <span className="truncate text-xs">{user?.email}</span>
                 </div>
               </div>

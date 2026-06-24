@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { google } from 'googleapis'
 
 import { asyncRoute } from '../lib/http.js'
-import { getOAuth2Client, getTokenByEmail, saveGoogleTokens } from '../lib/gmail.js'
+import { getOAuth2Client, getTokenByEmail, saveGoogleTokens, syncGoogleProfile } from '../lib/gmail.js'
 import { GOOGLE_OAUTH_SCOPES } from '../lib/googleScopes.js'
 import {
   clearOAuthStateCookie,
@@ -57,9 +57,18 @@ router.get('/status', asyncRoute(async (req, res) => {
   const token = await getTokenByEmail(req.user.email)
   if (!token) return res.json({ authenticated: false })
 
+  let user = serializeUser(token)
+  if (!token.picture || !token.name || token.name === token.email) {
+    try {
+      user = await syncGoogleProfile(token.email) || user
+    } catch (err) {
+      console.error('Google profile sync error:', err)
+    }
+  }
+
   res.json({
     authenticated: true,
-    user: serializeUser(token),
+    user,
     email: token.email,
   })
 }))

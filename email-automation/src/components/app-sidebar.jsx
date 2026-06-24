@@ -105,9 +105,13 @@ export function AppSidebar({
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain label={null} items={data.primary} />
-        <NavMain label="Coming Soon" items={data.comingSoonMain} />
-        <NavProjects projects={data.comingSoonLinks} />
+        <div className="pt-4">
+          <NavMain label={null} items={data.primary} />
+        </div>
+        <div className="mt-auto pb-2">
+          <NavMain label="Coming Soon" items={data.comingSoonMain} />
+          <NavProjects projects={data.comingSoonLinks} />
+        </div>
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={user} />

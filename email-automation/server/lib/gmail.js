@@ -60,7 +60,20 @@ export async function saveGoogleTokens({ email, name, picture, tokens }) {
   if (error) throw error
 }
 
-export async function getAuthorizedGmail(email) {
+export async function updateGoogleProfile({ email, name, picture }) {
+  const supabase = getSupabase()
+  const { error } = await supabase
+    .from('gmail_tokens')
+    .update({
+      name: name || email,
+      picture: picture || null,
+    })
+    .eq('email', email)
+
+  if (error) throw error
+}
+
+export async function getAuthorizedOAuth2Client(email) {
   const token = await getTokenByEmail(email)
   if (!token) {
     const error = new Error('Not authenticated. Please connect Gmail first.')
@@ -90,8 +103,32 @@ export async function getAuthorizedGmail(email) {
     })
   }
 
+  return { email: token.email, oauth2Client }
+}
+
+export async function syncGoogleProfile(email) {
+  const { oauth2Client } = await getAuthorizedOAuth2Client(email)
+  const oauth2 = google.oauth2({ version: 'v2', auth: oauth2Client })
+  const profile = await oauth2.userinfo.get()
+  if (!profile.data.email) return null
+
+  await updateGoogleProfile({
+    email: profile.data.email,
+    name: profile.data.name || profile.data.email,
+    picture: profile.data.picture || '',
+  })
+
   return {
-    email: token.email,
+    email: profile.data.email,
+    name: profile.data.name || profile.data.email,
+    picture: profile.data.picture || '',
+  }
+}
+
+export async function getAuthorizedGmail(email) {
+  const { email: tokenEmail, oauth2Client } = await getAuthorizedOAuth2Client(email)
+  return {
+    email: tokenEmail,
     gmail: google.gmail({ version: 'v1', auth: oauth2Client }),
   }
 }
